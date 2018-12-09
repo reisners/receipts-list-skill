@@ -1,0 +1,7 @@
+{
+  "lambda": {
+    "role": "receipts-list-skill-executor",
+    "name": "receipts-list-skill",
+    "region": "eu-west-1"
+  }
+}
