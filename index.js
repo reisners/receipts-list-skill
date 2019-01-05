@@ -1,10 +1,9 @@
 // Receipts List: Alexa Skill Lambda function
 
-const Alexa = require('ask-sdk-core');
+const Alexa = require('ask-sdk');
 const i18n = require('i18next');
 const sprintf = require('i18next-sprintf-postprocessor');
 const { google } = require('googleapis');
-
 
 // Handlers ===================================================================================
 
@@ -14,12 +13,20 @@ const LaunchHandler = {
 
         return request.type === 'LaunchRequest';
     },
-    handle(handlerInput) {
-        const attributesManager = handlerInput.attributesManager;
+    async handle(handlerInput) {
+        console.log("LaunchRequest");
+
         const responseBuilder = handlerInput.responseBuilder;
 
-        const requestAttributes = attributesManager.getRequestAttributes();
-        const speechOutput = `${requestAttributes.t('WELCOME')} ${requestAttributes.t('HELP')}`;
+        const session = handlerInput.requestEnvelope.session;
+        if (!session.user.accessToken) {
+            return responseBuilder.speak("Zur Belegerfassung aktiviere bitte zuerst die Kontoverknüpfung.").getResponse();
+        }
+
+        const attributes = await retrieveAndValidateAttributes(handlerInput);
+        console.log("spreadsheetId="+attributes.spreadsheetId);
+    
+        const speechOutput = "Willkommen zur Belegerfassung mit " + SKILL_NAME+". "+REPROMPT;
         return responseBuilder
             .speak(speechOutput)
             .reprompt(speechOutput)
@@ -33,70 +40,58 @@ const SaveReceiptHandler = {
 
         return request.type === 'IntentRequest' && request.intent.name === 'SaveReceipt';
     },
-    handle(handlerInput) {
+    async handle(handlerInput) {
+        console.log("SaveReceipt");
+
+        const attributes = await retrieveAndValidateAttributes(handlerInput);
+        console.log("spreadsheetId="+attributes.spreadsheetId);
+
         const request = handlerInput.requestEnvelope.request;
+        const session = handlerInput.requestEnvelope.session;
         const responseBuilder = handlerInput.responseBuilder;
 
-        if (request.user.accessToken) {
-            const accessToken = request.user.accessToken;
-            const shop = extractSlotValue(request.intent.slots.SHOP);
-            const date = request.intent.slots.DATE.value;
-            const category = extractSlotValue(request.intent.slots.CATEGORY);
-    
-            const amount_euros = request.intent.slots.AMOUNT_EUROS.value ? parseInt(request.intent.slots.AMOUNT_EUROS.value) : 0;
-            const amount_cents = request.intent.slots.AMOUNT_CENTS.value ? parseInt(request.intent.slots.AMOUNT_CENTS.value) : 0;
-            const amount = amount_euros + amount_cents/100.0;
-    
-            console.log("amount_euros="+amount_euros+", amount_cents="+amount_cents+", amount="+amount);
-    
-            const oAuth2Client = new google.auth.OAuth2();
-            oAuth2Client.setCredentials({access_token: accessToken});
-          
-            return updateSheet(oAuth2Client, date, shop, amount, category)
-                .then(function(response) {
-                    return responseBuilder.speak(response).getResponse();
-                });
-        } else {
+        if (!session.user.accessToken) {
             return responseBuilder.speak("Zur Belegerfassung aktiviere bitte zuerst die Kontoverknüpfung.").getResponse();
         }
-    },
-};
 
-const AboutHandler = {
-    canHandle(handlerInput) {
-        const request = handlerInput.requestEnvelope.request;
+        const receipt = buildReceipt(request);
 
-        return request.type === 'IntentRequest' && request.intent.name === 'AboutIntent';
-    },
-    handle(handlerInput) {
-        const attributesManager = handlerInput.attributesManager;
-        const responseBuilder = handlerInput.responseBuilder;
+        const oAuth2Client = createOAuthClient(handlerInput);
 
-        const requestAttributes = attributesManager.getRequestAttributes();
+        const response = await updateSheet(oAuth2Client, attributes.spreadsheetId, receipt)
+
+        console.log("spreadsheet updated");
 
         return responseBuilder
-            .speak(requestAttributes.t('ABOUT'))
+            .speak(response+" "+ASK_FOR_MORE)
+            .withShouldEndSession(false)
             .getResponse();
     },
 };
 
-const HelpHandler = {
+const YesHandler = {
     canHandle(handlerInput) {
         const request = handlerInput.requestEnvelope.request;
 
-        return request.type === 'IntentRequest' && request.intent.name === 'AMAZON.HelpIntent';
+        return request.type === 'IntentRequest' && request.intent.name === 'Yes';
     },
-    handle(handlerInput) {
-        const attributesManager = handlerInput.attributesManager;
+    async handle(handlerInput) {
         const responseBuilder = handlerInput.responseBuilder;
+        return responseBuilder.withShouldEndSession(false).getResponse();
+    }
+}
 
-        const requestAttributes = attributesManager.getRequestAttributes();
-        return responseBuilder
-            .speak(requestAttributes.t('HELP'))
-            .reprompt(requestAttributes.t('HELP'))
-            .getResponse();
+const NoHandler = {
+    canHandle(handlerInput) {
+        const request = handlerInput.requestEnvelope.request;
+
+        return request.type === 'IntentRequest' && request.intent.name === 'No';
     },
-};
+    async handle(handlerInput) {
+        const responseBuilder = handlerInput.responseBuilder;
+        return responseBuilder.speak("Bis zum nächsten Mal!").getResponse();
+    }
+}
 
 const SessionEndedHandler = {
     canHandle(handlerInput) {
@@ -104,7 +99,7 @@ const SessionEndedHandler = {
 
         return request.type === 'SessionEndedRequest';
     },
-    handle(handlerInput) {
+    async handle(handlerInput) {
         console.log(`Session ended with reason: ${handlerInput.requestEnvelope.request.reason}`);
 
         return handlerInput.responseBuilder.getResponse();
@@ -115,15 +110,14 @@ const ErrorHandler = {
     canHandle() {
         return true;
     },
-    handle(handlerInput, error) {
+    async handle(handlerInput, error) {
         const request = handlerInput.requestEnvelope.request;
 
         console.log(`Error handled: ${error.message}`);
         console.log(` Original request was ${JSON.stringify(request, null, 2)}\n`);
 
         return handlerInput.responseBuilder
-            .speak('Sorry, I can\'t understand the command. Please say again.')
-            .reprompt('Sorry, I can\'t understand the command. Please say again.')
+            .speak('Bei der Belegerfassung ist ein Fehler aufgetreten. Die Session wird beendet. Bitte überprüfe den Inhalt des Spreadsheets '+TITLE+' und wiederhole die fehlgeschlagene Erfassung. Falls es immer noch nicht funktioniert, deaktiviere und reaktiviere den '+SKILL_NAME+' Skill.')
             .getResponse();
     },
 };
@@ -133,36 +127,213 @@ const ErrorHandler = {
 
 const SKILL_NAME = 'Receipts List';
 
-const spreadsheetId = '1vWmEGdj8VS0tfqwSl8WCbIPonpcjMsNKb7H0nWeMAAg';
-const range = 'Bills!A2:D';
+const TITLE = SKILL_NAME;
+
+const TABLE_NAME = 'receipts-list-spreadsheet-id-table';
+
+const RANGE = 'A1:D';
+
+const ASK_FOR_MORE = 'Möchtest du noch einen Beleg speichern?';
+
+const REPROMPT = 'Sage zum Beispiel: Speichere Einkauf von Lebensmitteln bei Supermarkt am letzten Samstag für vier Euro.';
 
 // 3. Helper Functions ==========================================================================
 
-async function updateSheet(auth, date, shop, amount, category) {
+async function retrieveAndValidateAttributes(handlerInput) {
+    const oAuth2Client = createOAuthClient(handlerInput);
+
+    const attributesManager = handlerInput.attributesManager;
+    const attributes = await retrieveAttributes(attributesManager, oAuth2Client);
+    if (!attributes.spreadsheetId) {
+        throw new Error("should not occur");
+    }
+    console.log("now validating spreadsheet "+attributes.spreadsheetId);
+    try {
+        await validateSpreadsheetId(oAuth2Client, TITLE, attributes.spreadsheetId);
+        attributesManager.setSessionAttributes(attributes);
+    } catch (err) {
+        console.log("validation of spreadsheet "+attributes.spreadsheetId+" failed: ", err);
+        // the spreadsheet with spreadsheetId is broken
+        // remove the spreadsheetId from session and persistent attributes
+        attributesManager.setSessionAttributes({});
+        attributesManager.setPersistentAttributes({});
+        await attributesManager.savePersistentAttributes();
+        // now start over (builing a fresh spreadsheet)
+        return retrieveAndValidateAttributes(handlerInput);
+    }
+
+    return attributes;
+}
+
+async function retrieveAttributes(attributesManager, oAuth2Client) {
+    const sessionAttributes = attributesManager.getSessionAttributes();
+
+    if (sessionAttributes.spreadsheetId) {
+        console.log("found sessionAttributes.spreadsheetId="+sessionAttributes.spreadsheetId);
+        return sessionAttributes;
+    }
+
+    const attributes = await attributesManager.getPersistentAttributes() || {};
+    console.log("retrieved persistent attributes: "+JSON.stringify(attributes));
+
+    if (!attributes.spreadsheetId) {
+        console.log("no spreadsheetId found - building new spreadsheet");
+        attributes.spreadsheetId = await buildSpreadsheet(oAuth2Client, TITLE);
+        attributesManager.setPersistentAttributes(attributes);
+        await attributesManager.savePersistentAttributes();
+        console.log("session attributes persisted: "+JSON.stringify(attributes));
+    } else {
+        console.log("got spreadsheetId "+attributes.spreadsheetId);
+    }
+
+    return attributes;
+}
+
+function createOAuthClient(handlerInput) {
+    const session = handlerInput.requestEnvelope.session;
+    const accessToken = session.user.accessToken;
+    const oAuth2Client = new google.auth.OAuth2();
+    oAuth2Client.setCredentials({access_token: accessToken});
+    return oAuth2Client;
+}
+
+const getCircularReplacer = () => {
+    const seen = new WeakSet();
+    return (key, value) => {
+      if (typeof value === "object" && value !== null) {
+        if (seen.has(value)) {
+          return;
+        }
+        seen.add(value);
+      }
+      return value;
+    };
+  };
+
+function buildReceipt(request) {
+    const shop = extractSlotValue(request.intent.slots.SHOP);
+    const date = request.intent.slots.DATE.value;
+    const category = extractSlotValue(request.intent.slots.CATEGORY);
+
+    const amount_euros = request.intent.slots.AMOUNT_EUROS.value ? parseInt(request.intent.slots.AMOUNT_EUROS.value) : 0;
+    const amount_cents = request.intent.slots.AMOUNT_CENTS.value ? parseInt(request.intent.slots.AMOUNT_CENTS.value) : 0;
+    const amount = amount_euros + amount_cents/100.0;
+
+    console.log("amount_euros="+amount_euros+", amount_cents="+amount_cents+", amount="+amount);
+
+    return {
+        date: date,
+        shop: shop,
+        amount: amount,
+        category: category
+    };
+}
+
+async function validateSpreadsheetId(oAuth2Client, title, spreadsheetId) {
+    await readRange(oAuth2Client, spreadsheetId);
+    console.log("validated spreadsheet "+spreadsheetId);
+}
+
+async function buildSpreadsheet(oAuth2Client, title) {
+    console.log("buildSpreadsheet(oAuth2Client,"+title+")");
+    const spreadsheetId = await createSpreadsheet(oAuth2Client, title);
+    console.log("created spreadsheetId="+spreadsheetId);
+    await writeSheetHeader(oAuth2Client, spreadsheetId);
+    console.log("header written");
+    return spreadsheetId;
+}
+
+async function createSpreadsheet(oAuth2Client, title) {
+    return new Promise( (resolve, reject) =>{
+        const sheets = google.sheets('v4');
+        const resource = {
+            properties: {
+              title: title
+            }
+        };
+        const request = {
+            resource,
+            fields: 'spreadsheetId',
+            auth: oAuth2Client
+        };          
+        sheets.spreadsheets.create(request, (err, response) => {
+            if (err) {
+                reject(err);
+            } else {
+                console.log("createSpreadsheet="+response.data.spreadsheetId);
+                resolve(response.data.spreadsheetId);
+            }
+        })        
+    })
+}
+
+async function writeSheetHeader(oAuth2Client, spreadsheetId) {
+    console.log("writeSheetHeader(oAuth2Client,"+spreadsheetId+")");
+    return appendRecord(oAuth2Client, spreadsheetId, ["Date", "Shop", "Amount", "Category"]);
+}
+
+async function updateSheet(oAuth2Client, spreadsheetId, receipt) {
+    console.log("updateSheet("+JSON.stringify(receipt)+")");
+    const receiptRecord = [receipt.date, receipt.shop, receipt.amount, receipt.category];
+    await appendRecord(oAuth2Client, spreadsheetId, receiptRecord);
+    return "Ich habe "+receipt.shop+" "+receipt.date+" gespeichert.";
+}
+
+function readRange(oAuth2Client, spreadsheetId) {
+    var request = {
+        spreadsheetId: spreadsheetId,
+        range: RANGE+'1',
+        valueRenderOption: 'UNFORMATTED_VALUE',
+        dateTimeRenderOption: 'FORMATTED_STRING',
+        auth: oAuth2Client,
+      };
+    
     return new Promise( (resolve, reject) => {
-        const sheets = google.sheets({version: 'v4', auth});
+        const sheets = google.sheets('v4');
+        sheets.spreadsheets.values.get(request, function(err, response) {
+            if (err) {
+                console.log('an error occured');
+                console.error(err);
+                reject(err);
+            } else {
+                console.log('range read');
+                resolve(response);
+            }
+        });
+    });
+}
+
+function appendRecord(oAuth2Client, spreadsheetId, record) {
+    console.log("appendRecord(oAuth2Client,"+spreadsheetId+","+JSON.stringify(record)+")");
+    return new Promise( (resolve, reject) => {
+        const sheets = google.sheets('v4');
         sheets.spreadsheets.values.append({
             spreadsheetId: spreadsheetId,
-            range: range,
+            range: RANGE,
             valueInputOption: 'RAW',
             insertDataOption: 'INSERT_ROWS',
             resource: {
                 values: [
-                [date, shop, amount, category]
+                record
                 ]
             },
+            auth: oAuth2Client
         }, (err, result) => {
+            console.log("appendRecord callback invoked err="+err);
             if (err) {
                 // Handle error.
+                console.log("an error occurred");
                 console.log(err);
-                reject("Beim Speichern des Einkaufsbelegs ist ein Fehler aufgetreten.");
+                reject(err);
             } else {
-                resolve("Ich habe "+shop+" "+date+" gespeichert.");
+                console.log("record appended");
+                resolve(result);
             }
-        });  
+        });
+        console.log("append request sent");  
     });
 }
-  
+
 function extractSlotValue(slot) {
     console.log("slot="+JSON.stringify(slot));
     return slot.resolutions.resolutionsPerAuthority[0].values ? slot.resolutions.resolutionsPerAuthority[0].values[0].value.name : slot.value;
@@ -170,14 +341,19 @@ function extractSlotValue(slot) {
 
 // 4. Export =====================================================================================
 
-const skillBuilder = Alexa.SkillBuilders.custom();
+//const skillBuilder = Alexa.SkillBuilders.custom();
+const skillBuilder = Alexa.SkillBuilders.standard();
+
 exports.handler = skillBuilder
     .addRequestHandlers(
         LaunchHandler,
         SaveReceiptHandler,
-        AboutHandler,
-        HelpHandler,
+        YesHandler,
+        NoHandler,
         SessionEndedHandler
     )
     .addErrorHandlers(ErrorHandler)
+    .withDynamoDbClient()
+    .withTableName(TABLE_NAME)
+    .withAutoCreateTable(true)
     .lambda();
