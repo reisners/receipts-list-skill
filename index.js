@@ -20,7 +20,10 @@ const LaunchHandler = {
 
         const session = handlerInput.requestEnvelope.session;
         if (!session.user.accessToken) {
-            return responseBuilder.speak("Zur Belegerfassung aktiviere bitte zuerst die Kontoverknüpfung.").getResponse();
+            return responseBuilder
+                .speak("Zur Belegerfassung aktiviere bitte zuerst die Kontoverknüpfung.")
+                .withLinkAccountCard()
+                .getResponse();
         }
 
         const attributes = await retrieveAndValidateAttributes(handlerInput);
@@ -93,6 +96,18 @@ const NoHandler = {
     }
 }
 
+const TerminationHandler = {
+    canHandle(handlerInput) {
+        const request = handlerInput.requestEnvelope.request;
+
+        return request.type === 'IntentRequest' && (request.intent.name === 'AMAZON.StopIntent' || request.intent.name === 'AMAZON.CancelIntent');
+    },
+    async handle(handlerInput) {
+        const responseBuilder = handlerInput.responseBuilder;
+        return responseBuilder.speak("Bis zum nächsten Mal!").getResponse();
+    }
+}
+
 const SessionEndedHandler = {
     canHandle(handlerInput) {
         const request = handlerInput.requestEnvelope.request;
@@ -122,6 +137,22 @@ const ErrorHandler = {
     },
 };
 
+const HelpHandler = {
+    canHandle(handlerInput) {
+        const request = handlerInput.requestEnvelope.request;
+
+        return request.type === 'IntentRequest' && request.intent.name === 'AMAZON.HelpIntent';
+    },
+    async handle(handlerInput, error) {
+        const request = handlerInput.requestEnvelope.request;
+
+        return handlerInput.responseBuilder
+            .speak(HELP)
+            .withShouldEndSession(false)
+            .getResponse();
+    },
+};
+
 
 // 2. Constants
 
@@ -136,6 +167,8 @@ const RANGE = 'A1:D';
 const ASK_FOR_MORE = 'Möchtest du noch einen Beleg speichern?';
 
 const REPROMPT = 'Sage zum Beispiel: Speichere Einkauf von Lebensmitteln bei Supermarkt am letzten Samstag für vier Euro.';
+
+const HELP = 'Mit Receipts List speichere ich die Einkaufsbelege, die du mir diktierst, in einem Google Spreadsheet ab. Ich lege dieses Spreadsheet für dich in deinem Google Drive an. Es heißt "Receipts List". Um nun einen Beleg abzuspeichern, '+REPROMPT;
 
 // 3. Helper Functions ==========================================================================
 
@@ -350,6 +383,8 @@ exports.handler = skillBuilder
         SaveReceiptHandler,
         YesHandler,
         NoHandler,
+        TerminationHandler,
+        HelpHandler,
         SessionEndedHandler
     )
     .addErrorHandlers(ErrorHandler)

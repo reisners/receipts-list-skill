@@ -1,0 +1,1276 @@
+{
+    "interactionModel": {
+        "languageModel": {
+            "invocationName": "receipts list",
+            "intents": [
+                {
+                    "name": "AMAZON.FallbackIntent",
+                    "samples": []
+                },
+                {
+                    "name": "AMAZON.CancelIntent",
+                    "samples": []
+                },
+                {
+                    "name": "AMAZON.HelpIntent",
+                    "samples": []
+                },
+                {
+                    "name": "AMAZON.StopIntent",
+                    "samples": []
+                },
+                {
+                    "name": "AMAZON.NavigateHomeIntent",
+                    "samples": []
+                },
+                {
+                    "name": "SaveReceipt",
+                    "slots": [
+                        {
+                            "name": "SHOP",
+                            "type": "SHOP_TYPE",
+                            "samples": [
+                                "von {SHOP}"
+                            ]
+                        },
+                        {
+                            "name": "DATE",
+                            "type": "AMAZON.DATE"
+                        },
+                        {
+                            "name": "AMOUNT_EUROS",
+                            "type": "AMAZON.NUMBER"
+                        },
+                        {
+                            "name": "AMOUNT_CENTS",
+                            "type": "AMAZON.NUMBER"
+                        },
+                        {
+                            "name": "CATEGORY",
+                            "type": "CATEGORY_TYPE"
+                        }
+                    ],
+                    "samples": [
+                        "einkauf von {CATEGORY} bei {SHOP} am {DATE} für {AMOUNT_CENTS} cents",
+                        "einkauf von {CATEGORY} bei {SHOP} am {DATE} für {AMOUNT_EUROS} {AMOUNT_CENTS}",
+                        "einkauf von {CATEGORY} bei {SHOP} am {DATE} für {AMOUNT_EUROS} euro {AMOUNT_CENTS} cents",
+                        "einkauf von {CATEGORY} bei {SHOP} am {DATE} für {AMOUNT_EUROS} euro {AMOUNT_CENTS}",
+                        "einkauf von {CATEGORY} bei {SHOP} am {DATE} für {AMOUNT_EUROS} euro"
+                    ]
+                }
+            ],
+            "types": [
+                {
+                    "name": "SHOP_TYPE",
+                    "values": [
+                        {
+                            "id": "8",
+                            "name": {
+                                "value": "ALDI"
+                            }
+                        },
+                        {
+                            "id": "13",
+                            "name": {
+                                "value": "REWE"
+                            }
+                        },
+                        {
+                            "id": "10",
+                            "name": {
+                                "value": "dm"
+                            }
+                        },
+                        {
+                            "id": "3",
+                            "name": {
+                                "value": "Bauhaus"
+                            }
+                        },
+                        {
+                            "id": "18",
+                            "name": {
+                                "value": "Hornbach"
+                            }
+                        },
+                        {
+                            "id": "5",
+                            "name": {
+                                "value": "Apotheke"
+                            }
+                        },
+                        {
+                            "id": "111",
+                            "name": {
+                                "value": "Müller"
+                            }
+                        },
+                        {
+                            "id": "51",
+                            "name": {
+                                "value": "DB"
+                            }
+                        },
+                        {
+                            "id": "25",
+                            "name": {
+                                "value": "Galeria Kaufhof"
+                            }
+                        },
+                        {
+                            "id": "4",
+                            "name": {
+                                "value": "Alnatura"
+                            }
+                        },
+                        {
+                            "id": "14",
+                            "name": {
+                                "value": "IKEA"
+                            }
+                        },
+                        {
+                            "id": "126",
+                            "name": {
+                                "value": "Rossmann"
+                            }
+                        },
+                        {
+                            "id": "331",
+                            "name": {
+                                "value": "Beauty Lounge Medina"
+                            }
+                        },
+                        {
+                            "id": "148",
+                            "name": {
+                                "value": "EDEKA"
+                            }
+                        },
+                        {
+                            "id": "109",
+                            "name": {
+                                "value": "Depot"
+                            }
+                        },
+                        {
+                            "id": "62",
+                            "name": {
+                                "value": "Saturn"
+                            }
+                        },
+                        {
+                            "id": "65",
+                            "name": {
+                                "value": "Höffner"
+                            }
+                        },
+                        {
+                            "id": "214",
+                            "name": {
+                                "value": "Adidas"
+                            }
+                        },
+                        {
+                            "id": "24",
+                            "name": {
+                                "value": "idee"
+                            }
+                        },
+                        {
+                            "id": "132",
+                            "name": {
+                                "value": "denn's"
+                            }
+                        },
+                        {
+                            "id": "202",
+                            "name": {
+                                "value": "Zweirad Otto"
+                            }
+                        },
+                        {
+                            "id": "219",
+                            "name": {
+                                "value": "McDonalds"
+                            }
+                        },
+                        {
+                            "id": "260",
+                            "name": {
+                                "value": "Dehner"
+                            }
+                        },
+                        {
+                            "id": "263",
+                            "name": {
+                                "value": "Lidl"
+                            }
+                        },
+                        {
+                            "id": "33",
+                            "name": {
+                                "value": "OBI"
+                            }
+                        },
+                        {
+                            "id": "72",
+                            "name": {
+                                "value": "Siegel"
+                            }
+                        },
+                        {
+                            "id": "75",
+                            "name": {
+                                "value": "LeCrobag"
+                            }
+                        },
+                        {
+                            "id": "102",
+                            "name": {
+                                "value": "Rituals"
+                            }
+                        },
+                        {
+                            "id": "145",
+                            "name": {
+                                "value": "Metzgerei"
+                            }
+                        },
+                        {
+                            "id": "200",
+                            "name": {
+                                "value": "Kaufland"
+                            }
+                        },
+                        {
+                            "id": "240",
+                            "name": {
+                                "value": "Olymp"
+                            }
+                        },
+                        {
+                            "id": "290",
+                            "name": {
+                                "value": "Playmobilland"
+                            }
+                        },
+                        {
+                            "id": "368",
+                            "name": {
+                                "value": "Nanu Nana"
+                            }
+                        },
+                        {
+                            "id": "390",
+                            "name": {
+                                "value": "Vinci Due"
+                            }
+                        },
+                        {
+                            "id": "728",
+                            "name": {
+                                "value": "Dorfladen"
+                            }
+                        },
+                        {
+                            "id": "730",
+                            "name": {
+                                "value": "Kupferkanne"
+                            }
+                        },
+                        {
+                            "id": "15",
+                            "name": {
+                                "value": "Mediamarkt"
+                            }
+                        },
+                        {
+                            "id": "16",
+                            "name": {
+                                "value": "toom"
+                            }
+                        },
+                        {
+                            "id": "80",
+                            "name": {
+                                "value": "Buchhandlung"
+                            }
+                        },
+                        {
+                            "id": "98",
+                            "name": {
+                                "value": "Neubert"
+                            }
+                        },
+                        {
+                            "id": "157",
+                            "name": {
+                                "value": "Kibek"
+                            }
+                        },
+                        {
+                            "id": "178",
+                            "name": {
+                                "value": "real"
+                            }
+                        },
+                        {
+                            "id": "204",
+                            "name": {
+                                "value": "Verdi"
+                            }
+                        },
+                        {
+                            "id": "205",
+                            "name": {
+                                "value": "Cinecitta"
+                            }
+                        },
+                        {
+                            "id": "233",
+                            "name": {
+                                "value": "Thalia"
+                            }
+                        },
+                        {
+                            "id": "264",
+                            "name": {
+                                "value": "Bäcker"
+                            }
+                        },
+                        {
+                            "id": "267",
+                            "name": {
+                                "value": "Strohauer's Cafe"
+                            }
+                        },
+                        {
+                            "id": "295",
+                            "name": {
+                                "value": "Dunkin Donuts"
+                            }
+                        },
+                        {
+                            "id": "297",
+                            "name": {
+                                "value": "Beck"
+                            }
+                        },
+                        {
+                            "id": "330",
+                            "name": {
+                                "value": "Subway"
+                            }
+                        },
+                        {
+                            "id": "360",
+                            "name": {
+                                "value": "Hafenrundfahrt"
+                            }
+                        },
+                        {
+                            "id": "362",
+                            "name": {
+                                "value": "Miniturwunderland"
+                            }
+                        },
+                        {
+                            "id": "387",
+                            "name": {
+                                "value": "Reebok"
+                            }
+                        },
+                        {
+                            "id": "495",
+                            "name": {
+                                "value": "Historisches Museum"
+                            }
+                        },
+                        {
+                            "id": "588",
+                            "name": {
+                                "value": "Fahrrad Otto"
+                            }
+                        },
+                        {
+                            "id": "610",
+                            "name": {
+                                "value": "Blumenfee"
+                            }
+                        },
+                        {
+                            "id": "614",
+                            "name": {
+                                "value": "adidas"
+                            }
+                        },
+                        {
+                            "id": "671",
+                            "name": {
+                                "value": "Shell"
+                            }
+                        },
+                        {
+                            "id": "731",
+                            "name": {
+                                "value": "Erlebniszentrum"
+                            }
+                        },
+                        {
+                            "id": "735",
+                            "name": {
+                                "value": "bahn"
+                            }
+                        },
+                        {
+                            "id": "2",
+                            "name": {
+                                "value": "Kinopolis"
+                            }
+                        },
+                        {
+                            "id": "12",
+                            "name": {
+                                "value": "scheckin"
+                            }
+                        },
+                        {
+                            "id": "36",
+                            "name": {
+                                "value": "Löschmann"
+                            }
+                        },
+                        {
+                            "id": "42",
+                            "name": {
+                                "value": "SchuhMarke"
+                            }
+                        },
+                        {
+                            "id": "81",
+                            "name": {
+                                "value": "Sportarena"
+                            }
+                        },
+                        {
+                            "id": "106",
+                            "name": {
+                                "value": "Bräuninger"
+                            }
+                        },
+                        {
+                            "id": "110",
+                            "name": {
+                                "value": "City-Markt"
+                            }
+                        },
+                        {
+                            "id": "115",
+                            "name": {
+                                "value": "Blumenladen"
+                            }
+                        },
+                        {
+                            "id": "142",
+                            "name": {
+                                "value": "Hofpfisterei"
+                            }
+                        },
+                        {
+                            "id": "143",
+                            "name": {
+                                "value": "tegut"
+                            }
+                        },
+                        {
+                            "id": "144",
+                            "name": {
+                                "value": "Waltmann"
+                            }
+                        },
+                        {
+                            "id": "168",
+                            "name": {
+                                "value": "LUSH"
+                            }
+                        },
+                        {
+                            "id": "182",
+                            "name": {
+                                "value": "VVS"
+                            }
+                        },
+                        {
+                            "id": "185",
+                            "name": {
+                                "value": "pen&paper"
+                            }
+                        },
+                        {
+                            "id": "191",
+                            "name": {
+                                "value": "red"
+                            }
+                        },
+                        {
+                            "id": "203",
+                            "name": {
+                                "value": "Kölner Confisserie"
+                            }
+                        },
+                        {
+                            "id": "231",
+                            "name": {
+                                "value": "Medialand"
+                            }
+                        },
+                        {
+                            "id": "232",
+                            "name": {
+                                "value": "Intersport"
+                            }
+                        },
+                        {
+                            "id": "236",
+                            "name": {
+                                "value": "Pinocchio"
+                            }
+                        },
+                        {
+                            "id": "262",
+                            "name": {
+                                "value": "Ta Panta Ri"
+                            }
+                        },
+                        {
+                            "id": "269",
+                            "name": {
+                                "value": "Leisinger"
+                            }
+                        },
+                        {
+                            "id": "270",
+                            "name": {
+                                "value": "Schmidt's"
+                            }
+                        },
+                        {
+                            "id": "279",
+                            "name": {
+                                "value": "Parkhotel"
+                            }
+                        },
+                        {
+                            "id": "280",
+                            "name": {
+                                "value": "The Squire"
+                            }
+                        },
+                        {
+                            "id": "287",
+                            "name": {
+                                "value": "Malaka Street"
+                            }
+                        },
+                        {
+                            "id": "288",
+                            "name": {
+                                "value": "McDonalds Pune"
+                            }
+                        },
+                        {
+                            "id": "289",
+                            "name": {
+                                "value": "Kiosk Pune"
+                            }
+                        },
+                        {
+                            "id": "294",
+                            "name": {
+                                "value": "Vapiano"
+                            }
+                        },
+                        {
+                            "id": "306",
+                            "name": {
+                                "value": "Steam"
+                            }
+                        },
+                        {
+                            "id": "317",
+                            "name": {
+                                "value": "Blumen"
+                            }
+                        },
+                        {
+                            "id": "325",
+                            "name": {
+                                "value": "Kamps KS"
+                            }
+                        },
+                        {
+                            "id": "333",
+                            "name": {
+                                "value": "Starbucks"
+                            }
+                        },
+                        {
+                            "id": "346",
+                            "name": {
+                                "value": "?"
+                            }
+                        },
+                        {
+                            "id": "354",
+                            "name": {
+                                "value": "Spar Express HH Hbf"
+                            }
+                        },
+                        {
+                            "id": "355",
+                            "name": {
+                                "value": "Fahrrad Brand"
+                            }
+                        },
+                        {
+                            "id": "357",
+                            "name": {
+                                "value": "Cafe Auszeit"
+                            }
+                        },
+                        {
+                            "id": "358",
+                            "name": {
+                                "value": "team Tankstelle"
+                            }
+                        },
+                        {
+                            "id": "364",
+                            "name": {
+                                "value": "Fidget Spinner"
+                            }
+                        },
+                        {
+                            "id": "366",
+                            "name": {
+                                "value": "Dionysos"
+                            }
+                        },
+                        {
+                            "id": "367",
+                            "name": {
+                                "value": "Euroshop"
+                            }
+                        },
+                        {
+                            "id": "371",
+                            "name": {
+                                "value": "Kamps HH Hbf"
+                            }
+                        },
+                        {
+                            "id": "372",
+                            "name": {
+                                "value": "Feriendorf"
+                            }
+                        },
+                        {
+                            "id": "376",
+                            "name": {
+                                "value": "Chiang Mai"
+                            }
+                        },
+                        {
+                            "id": "378",
+                            "name": {
+                                "value": "Biergarten"
+                            }
+                        },
+                        {
+                            "id": "381",
+                            "name": {
+                                "value": "Bella Crema"
+                            }
+                        },
+                        {
+                            "id": "405",
+                            "name": {
+                                "value": "Schreibwaren Müller"
+                            }
+                        },
+                        {
+                            "id": "407",
+                            "name": {
+                                "value": "Casa Dei Fiori"
+                            }
+                        },
+                        {
+                            "id": "422",
+                            "name": {
+                                "value": "Qube"
+                            }
+                        },
+                        {
+                            "id": "423",
+                            "name": {
+                                "value": "Aral"
+                            }
+                        },
+                        {
+                            "id": "440",
+                            "name": {
+                                "value": "TEDI"
+                            }
+                        },
+                        {
+                            "id": "455",
+                            "name": {
+                                "value": "Wiegand"
+                            }
+                        },
+                        {
+                            "id": "456",
+                            "name": {
+                                "value": "Tracks"
+                            }
+                        },
+                        {
+                            "id": "457",
+                            "name": {
+                                "value": "Goethe Bar"
+                            }
+                        },
+                        {
+                            "id": "468",
+                            "name": {
+                                "value": "T.K.maxx"
+                            }
+                        },
+                        {
+                            "id": "472",
+                            "name": {
+                                "value": "Cafe Bonnen"
+                            }
+                        },
+                        {
+                            "id": "489",
+                            "name": {
+                                "value": "Craemer"
+                            }
+                        },
+                        {
+                            "id": "494",
+                            "name": {
+                                "value": "Parken"
+                            }
+                        },
+                        {
+                            "id": "506",
+                            "name": {
+                                "value": "Jewels of India"
+                            }
+                        },
+                        {
+                            "id": "510",
+                            "name": {
+                                "value": "Aqwa"
+                            }
+                        },
+                        {
+                            "id": "546",
+                            "name": {
+                                "value": "Thanner"
+                            }
+                        },
+                        {
+                            "id": "569",
+                            "name": {
+                                "value": "Eis"
+                            }
+                        },
+                        {
+                            "id": "571",
+                            "name": {
+                                "value": "Luxor Filmpalast HD"
+                            }
+                        },
+                        {
+                            "id": "582",
+                            "name": {
+                                "value": "Grimminger"
+                            }
+                        },
+                        {
+                            "id": "589",
+                            "name": {
+                                "value": "Wöhrl"
+                            }
+                        },
+                        {
+                            "id": "590",
+                            "name": {
+                                "value": "Tchibo"
+                            }
+                        },
+                        {
+                            "id": "598",
+                            "name": {
+                                "value": "Cavaly"
+                            }
+                        },
+                        {
+                            "id": "602",
+                            "name": {
+                                "value": "Kühler Krug"
+                            }
+                        },
+                        {
+                            "id": "603",
+                            "name": {
+                                "value": "Schmidts"
+                            }
+                        },
+                        {
+                            "id": "613",
+                            "name": {
+                                "value": "Sport Hoffmann"
+                            }
+                        },
+                        {
+                            "id": "628",
+                            "name": {
+                                "value": "Cafe Rossi"
+                            }
+                        },
+                        {
+                            "id": "637",
+                            "name": {
+                                "value": "Sport Conrad"
+                            }
+                        },
+                        {
+                            "id": "639",
+                            "name": {
+                                "value": "Gasthaus zur Schranne"
+                            }
+                        },
+                        {
+                            "id": "655",
+                            "name": {
+                                "value": "Convention Center"
+                            }
+                        },
+                        {
+                            "id": "656",
+                            "name": {
+                                "value": "Courtyard Marriott"
+                            }
+                        },
+                        {
+                            "id": "658",
+                            "name": {
+                                "value": "Mooyah Burgers"
+                            }
+                        },
+                        {
+                            "id": "659",
+                            "name": {
+                                "value": "Basin St. Station"
+                            }
+                        },
+                        {
+                            "id": "660",
+                            "name": {
+                                "value": "Fleur de Paris"
+                            }
+                        },
+                        {
+                            "id": "661",
+                            "name": {
+                                "value": "Izzo's Burritos"
+                            }
+                        },
+                        {
+                            "id": "662",
+                            "name": {
+                                "value": "Flughafen"
+                            }
+                        },
+                        {
+                            "id": "668",
+                            "name": {
+                                "value": "Stadtmetzgerei"
+                            }
+                        },
+                        {
+                            "id": "670",
+                            "name": {
+                                "value": "Roseto"
+                            }
+                        },
+                        {
+                            "id": "684",
+                            "name": {
+                                "value": "Slyrs"
+                            }
+                        },
+                        {
+                            "id": "685",
+                            "name": {
+                                "value": "Avia"
+                            }
+                        },
+                        {
+                            "id": "692",
+                            "name": {
+                                "value": "Gocartvermietung"
+                            }
+                        },
+                        {
+                            "id": "699",
+                            "name": {
+                                "value": "Arthotel"
+                            }
+                        },
+                        {
+                            "id": "700",
+                            "name": {
+                                "value": "Cafe Behr"
+                            }
+                        },
+                        {
+                            "id": "703",
+                            "name": {
+                                "value": "Akis"
+                            }
+                        },
+                        {
+                            "id": "722",
+                            "name": {
+                                "value": "Idee. Creativ"
+                            }
+                        },
+                        {
+                            "id": "723",
+                            "name": {
+                                "value": "Obi"
+                            }
+                        },
+                        {
+                            "id": "727",
+                            "name": {
+                                "value": "Trend Design"
+                            }
+                        },
+                        {
+                            "id": "729",
+                            "name": {
+                                "value": "Schatzkiste"
+                            }
+                        },
+                        {
+                            "id": "733",
+                            "name": {
+                                "value": "famila"
+                            }
+                        },
+                        {
+                            "id": "734",
+                            "name": {
+                                "value": "Viale Antico"
+                            }
+                        },
+                        {
+                            "id": "749",
+                            "name": {
+                                "value": "Kamps"
+                            }
+                        },
+                        {
+                            "id": "752",
+                            "name": {
+                                "value": "LeCroBag"
+                            }
+                        },
+                        {
+                            "id": "756",
+                            "name": {
+                                "value": "Kraus"
+                            }
+                        },
+                        {
+                            "id": "760",
+                            "name": {
+                                "value": "Blume 2000"
+                            }
+                        },
+                        {
+                            "id": "761",
+                            "name": {
+                                "value": "Bordbistro"
+                            }
+                        },
+                        {
+                            "id": "763",
+                            "name": {
+                                "value": "Denali"
+                            }
+                        },
+                        {
+                            "id": "765",
+                            "name": {
+                                "value": "Kölner Zoo"
+                            }
+                        },
+                        {
+                            "id": "767",
+                            "name": {
+                                "value": "Zoorestaurant"
+                            }
+                        },
+                        {
+                            "id": "768",
+                            "name": {
+                                "value": "Scheck-In"
+                            }
+                        },
+                        {
+                            "id": "773",
+                            "name": {
+                                "value": "Autowäsche"
+                            }
+                        },
+                        {
+                            "id": "774",
+                            "name": {
+                                "value": "Piccadilly English Shop"
+                            }
+                        },
+                        {
+                            "id": "775",
+                            "name": {
+                                "value": "Carls Brauhaus"
+                            }
+                        },
+                        {
+                            "id": "783",
+                            "name": {
+                                "value": "Zafferano"
+                            }
+                        },
+                        {
+                            "id": "787",
+                            "name": {
+                                "value": "Blumenhaus Rosenbach"
+                            }
+                        },
+                        {
+                            "id": "795",
+                            "name": {
+                                "value": "Goldener Löwe"
+                            }
+                        },
+                        {
+                            "id": "810",
+                            "name": {
+                                "value": "Bethanien"
+                            }
+                        }
+                    ]
+                },
+                {
+                    "name": "CATEGORY_TYPE",
+                    "values": [
+                        {
+                            "id": "4",
+                            "name": {
+                                "value": "Lebensmittel"
+                            }
+                        },
+                        {
+                            "id": "3",
+                            "name": {
+                                "value": "Haushalt"
+                            }
+                        },
+                        {
+                            "id": "191",
+                            "name": {
+                                "value": "Restaurant"
+                            }
+                        },
+                        {
+                            "id": "24",
+                            "name": {
+                                "value": "Kinder"
+                            }
+                        },
+                        {
+                            "id": "5",
+                            "name": {
+                                "value": "Medikamente"
+                            }
+                        },
+                        {
+                            "id": "182",
+                            "name": {
+                                "value": "Reisen"
+                            }
+                        },
+                        {
+                            "id": "42",
+                            "name": {
+                                "value": "Kleidung"
+                            }
+                        },
+                        {
+                            "id": "279",
+                            "name": {
+                                "value": "Urlaub"
+                            }
+                        },
+                        {
+                            "id": "317",
+                            "name": {
+                                "value": "Geschenke"
+                            }
+                        },
+                        {
+                            "id": "331",
+                            "name": {
+                                "value": "Friseur"
+                            }
+                        },
+                        {
+                            "id": "2",
+                            "name": {
+                                "value": "Kino"
+                            }
+                        },
+                        {
+                            "id": "25",
+                            "name": {
+                                "value": "Weihnachten"
+                            }
+                        },
+                        {
+                            "id": "496",
+                            "name": {
+                                "value": "Freizeit"
+                            }
+                        },
+                        {
+                            "id": "36",
+                            "name": {
+                                "value": "Elektriker"
+                            }
+                        },
+                        {
+                            "id": "306",
+                            "name": {
+                                "value": "Medien"
+                            }
+                        },
+                        {
+                            "id": "319",
+                            "name": {
+                                "value": "Sonderausgaben"
+                            }
+                        }
+                    ]
+                }
+            ]
+        },
+        "dialog": {
+            "intents": [
+                {
+                    "name": "SaveReceipt",
+                    "confirmationRequired": true,
+                    "prompts": {
+                        "confirmation": "Confirm.Intent.728159976453"
+                    },
+                    "slots": [
+                        {
+                            "name": "SHOP",
+                            "type": "SHOP_TYPE",
+                            "confirmationRequired": false,
+                            "elicitationRequired": true,
+                            "prompts": {
+                                "elicitation": "Elicit.Slot.728159976453.337340069443"
+                            }
+                        },
+                        {
+                            "name": "DATE",
+                            "type": "AMAZON.DATE",
+                            "confirmationRequired": false,
+                            "elicitationRequired": false,
+                            "prompts": {}
+                        },
+                        {
+                            "name": "AMOUNT_EUROS",
+                            "type": "AMAZON.NUMBER",
+                            "confirmationRequired": false,
+                            "elicitationRequired": true,
+                            "prompts": {
+                                "elicitation": "Elicit.Slot.728159976453.520223923687"
+                            }
+                        },
+                        {
+                            "name": "AMOUNT_CENTS",
+                            "type": "AMAZON.NUMBER",
+                            "confirmationRequired": false,
+                            "elicitationRequired": false,
+                            "prompts": {}
+                        },
+                        {
+                            "name": "CATEGORY",
+                            "type": "CATEGORY_TYPE",
+                            "confirmationRequired": false,
+                            "elicitationRequired": false,
+                            "prompts": {}
+                        }
+                    ]
+                }
+            ]
+        },
+        "prompts": [
+            {
+                "id": "Elicit.Slot.728159976453.520223923687",
+                "variations": [
+                    {
+                        "type": "PlainText",
+                        "value": "Welcher Betrag?"
+                    }
+                ]
+            },
+            {
+                "id": "Confirm.Intent.728159976453",
+                "variations": [
+                    {
+                        "type": "PlainText",
+                        "value": "Du hast am {DATE} bei {SHOP} {AMOUNT_EUROS} ausgegeben."
+                    }
+                ]
+            },
+            {
+                "id": "Elicit.Slot.728159976453.337340069443",
+                "variations": [
+                    {
+                        "type": "PlainText",
+                        "value": "Von wo ist der Beleg?"
+                    }
+                ]
+            },
+            {
+                "id": "Confirm.Slot.415231986575.640070143585",
+                "variations": [
+                    {
+                        "type": "PlainText",
+                        "value": "Ist der Betrag korrekt?"
+                    }
+                ]
+            }
+        ]
+    }
+}
