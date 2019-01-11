@@ -10,66 +10,64 @@ const { google } = require('googleapis');
 const LaunchHandler = {
     canHandle(handlerInput) {
         const request = handlerInput.requestEnvelope.request;
-
         return request.type === 'LaunchRequest';
     },
     async handle(handlerInput) {
         console.log("LaunchRequest");
-
         const responseBuilder = handlerInput.responseBuilder;
-
-        const session = handlerInput.requestEnvelope.session;
-        if (!session.user.accessToken) {
+        try {
+            const attributes = await retrieveAndValidateAttributes(handlerInput);
+            console.log("spreadsheetId="+attributes.spreadsheetId);
+        
+            const speechOutput = "Willkommen zur Belegerfassung mit " + SKILL_NAME+". "+REPROMPT;
             return responseBuilder
-                .speak("Zur Belegerfassung aktiviere bitte zuerst die Kontoverknüpfung.")
-                .withLinkAccountCard()
+                .speak(speechOutput)
+                .reprompt(speechOutput)
                 .getResponse();
+        } catch (e) {
+            if (e === ERROR_MISSING_ACCOUNT_LINKING) {
+                return responseBuilder
+                    .speak("Zur Belegerfassung aktiviere bitte zuerst die Kontoverknüpfung.")
+                    .withLinkAccountCard()
+                    .getResponse();
+            } else {
+                throw e;
+            }
         }
-
-        const attributes = await retrieveAndValidateAttributes(handlerInput);
-        console.log("spreadsheetId="+attributes.spreadsheetId);
-    
-        const speechOutput = "Willkommen zur Belegerfassung mit " + SKILL_NAME+". "+REPROMPT;
-        return responseBuilder
-            .speak(speechOutput)
-            .reprompt(speechOutput)
-            .getResponse();
-    },
+    }
 };
 
 const SaveReceiptHandler = {
     canHandle(handlerInput) {
         const request = handlerInput.requestEnvelope.request;
-
         return request.type === 'IntentRequest' && request.intent.name === 'SaveReceipt';
     },
     async handle(handlerInput) {
         console.log("SaveReceipt");
-
-        const attributes = await retrieveAndValidateAttributes(handlerInput);
-        console.log("spreadsheetId="+attributes.spreadsheetId);
-
-        const request = handlerInput.requestEnvelope.request;
-        const session = handlerInput.requestEnvelope.session;
         const responseBuilder = handlerInput.responseBuilder;
-
-        if (!session.user.accessToken) {
-            return responseBuilder.speak("Zur Belegerfassung aktiviere bitte zuerst die Kontoverknüpfung.").getResponse();
+        try {
+            const attributes = await retrieveAndValidateAttributes(handlerInput);
+            console.log("spreadsheetId="+attributes.spreadsheetId);
+            const request = handlerInput.requestEnvelope.request;
+            const receipt = buildReceipt(request);
+            const oAuth2Client = createOAuthClient(handlerInput);
+            const response = await updateSheet(oAuth2Client, attributes.spreadsheetId, receipt)
+            console.log("spreadsheet updated");
+            return responseBuilder
+                .speak(response+" "+ASK_FOR_MORE)
+                .withShouldEndSession(false)
+                .getResponse();
+        } catch (e) {
+            if (e === ERROR_MISSING_ACCOUNT_LINKING) {
+                return responseBuilder
+                    .speak("Zur Belegerfassung aktiviere bitte zuerst die Kontoverknüpfung.")
+                    .withLinkAccountCard()
+                    .getResponse();
+            } else {
+                throw e;
+            }
         }
-
-        const receipt = buildReceipt(request);
-
-        const oAuth2Client = createOAuthClient(handlerInput);
-
-        const response = await updateSheet(oAuth2Client, attributes.spreadsheetId, receipt)
-
-        console.log("spreadsheet updated");
-
-        return responseBuilder
-            .speak(response+" "+ASK_FOR_MORE)
-            .withShouldEndSession(false)
-            .getResponse();
-    },
+    }
 };
 
 const YesHandler = {
@@ -118,7 +116,7 @@ const SessionEndedHandler = {
         console.log(`Session ended with reason: ${handlerInput.requestEnvelope.request.reason}`);
 
         return handlerInput.responseBuilder.getResponse();
-    },
+    }
 };
 
 const ErrorHandler = {
@@ -134,7 +132,7 @@ const ErrorHandler = {
         return handlerInput.responseBuilder
             .speak('Bei der Belegerfassung ist ein Fehler aufgetreten. Die Session wird beendet. Bitte überprüfe den Inhalt des Spreadsheets '+TITLE+' und wiederhole die fehlgeschlagene Erfassung. Falls es immer noch nicht funktioniert, deaktiviere und reaktiviere den '+SKILL_NAME+' Skill.')
             .getResponse();
-    },
+    }
 };
 
 const HelpHandler = {
@@ -150,7 +148,7 @@ const HelpHandler = {
             .speak(HELP)
             .withShouldEndSession(false)
             .getResponse();
-    },
+    }
 };
 
 
@@ -169,6 +167,8 @@ const ASK_FOR_MORE = 'Möchtest du noch einen Beleg speichern?';
 const REPROMPT = 'Sage zum Beispiel: Speichere Einkauf von Lebensmitteln bei Supermarkt am letzten Samstag für vier Euro.';
 
 const HELP = 'Mit Receipts List speichere ich die Einkaufsbelege, die du mir diktierst, in einem Google Spreadsheet ab. Ich lege dieses Spreadsheet für dich in deinem Google Drive an. Es heißt "Receipts List". Um nun einen Beleg abzuspeichern, '+REPROMPT;
+
+const ERROR_MISSING_ACCOUNT_LINKING = 'ErrorMissingAccountLinking';
 
 // 3. Helper Functions ==========================================================================
 
@@ -224,6 +224,9 @@ async function retrieveAttributes(attributesManager, oAuth2Client) {
 
 function createOAuthClient(handlerInput) {
     const session = handlerInput.requestEnvelope.session;
+    if (!session.user.accessToken) {
+        throw ERROR_MISSING_ACCOUNT_LINKING;
+    }
     const accessToken = session.user.accessToken;
     const oAuth2Client = new google.auth.OAuth2();
     oAuth2Client.setCredentials({access_token: accessToken});
