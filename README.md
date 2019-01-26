@@ -2,9 +2,9 @@
 
 Steps to deploy this Alexa skill:
 
- # Add credentials to ~/.aws/credentials under profile claudia
- # Add region eu-west-1 to ~/.aws/config under profile claudia (this is necessary to create the DynamoDB table)
- # deploy the lambda function:
+ 1. Add credentials to ~/.aws/credentials under profile claudia
+ 1. Add region eu-west-1 to ~/.aws/config under profile claudia (this is necessary to create the DynamoDB table)
+ 1. deploy the lambda function:
 
 initial create:
 
