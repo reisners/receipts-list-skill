@@ -19,10 +19,13 @@ const LaunchHandler = {
             const attributes = await retrieveAndValidateAttributes(handlerInput);
             console.log("spreadsheetId="+attributes.spreadsheetId);
         
-            const speechOutput = "Willkommen zur Belegerfassung mit " + SKILL_NAME+". "+REPROMPT;
+            var response = "Willkommen zur Belegerfassung mit " + SKILL_NAME+".";
+            if (attributes.spreadsheetTitle) {
+                response += " Ich habe das Spreadsheet "+attributes.spreadsheetTitle+" angelegt.";
+            }
             return responseBuilder
-                .speak(speechOutput)
-                .reprompt(speechOutput)
+                .speak(response)
+                .reprompt(REPROMPT)
                 .getResponse();
         } catch (e) {
             if (e === ERROR_MISSING_ACCOUNT_LINKING) {
@@ -43,7 +46,7 @@ const SaveReceiptHandler = {
         return request.type === 'IntentRequest' && request.intent.name === 'SaveReceipt';
     },
     async handle(handlerInput) {
-        console.log("SaveReceipt");
+        console.log("SaveReceipt dialogState="+handlerInput.requestEnvelope.request.dialogState);
         const responseBuilder = handlerInput.responseBuilder;
         try {
             const attributes = await retrieveAndValidateAttributes(handlerInput);
@@ -51,7 +54,11 @@ const SaveReceiptHandler = {
             const request = handlerInput.requestEnvelope.request;
             const receipt = buildReceipt(request);
             const oAuth2Client = createOAuthClient(handlerInput);
-            const response = await updateSheet(oAuth2Client, attributes.spreadsheetId, receipt)
+            var response = "";
+            if (attributes.spreadsheetTitle) {
+                response += "Ich habe das Spreadsheet "+attributes.spreadsheetTitle+" angelegt. ";
+            }
+            response += await updateSheet(oAuth2Client, attributes.spreadsheetId, receipt)
             console.log("spreadsheet updated");
             return responseBuilder
                 .speak(response+" "+ASK_FOR_MORE)
@@ -130,7 +137,7 @@ const ErrorHandler = {
         console.log(` Original request was ${JSON.stringify(request, null, 2)}\n`);
 
         return handlerInput.responseBuilder
-            .speak('Bei der Belegerfassung ist ein Fehler aufgetreten. Die Session wird beendet. Bitte überprüfe den Inhalt des Spreadsheets '+TITLE+' und wiederhole die fehlgeschlagene Erfassung. Falls es immer noch nicht funktioniert, deaktiviere und reaktiviere den '+SKILL_NAME+' Skill.')
+            .speak('Bei der Belegerfassung ist ein Fehler aufgetreten. Die Session wird beendet.')
             .getResponse();
     }
 };
@@ -151,6 +158,22 @@ const HelpHandler = {
     }
 };
 
+const FallbackHandler = {
+    canHandle(handlerInput) {
+        const request = handlerInput.requestEnvelope.request;
+
+        return request.type === 'IntentRequest' && request.intent.name === 'AMAZON.FallbackIntent';
+    },
+    async handle(handlerInput, error) {
+        const request = handlerInput.requestEnvelope.request;
+
+        return handlerInput.responseBuilder
+            .speak("Das habe ich leider nicht verstanden. Du kannst mich um Hilfe bitten.")
+            .withShouldEndSession(false)
+            .getResponse();
+    }
+};
+
 
 // 2. Constants
 
@@ -164,9 +187,9 @@ const RANGE = 'A1:D';
 
 const ASK_FOR_MORE = 'Möchtest du noch einen Beleg speichern?';
 
-const REPROMPT = 'Sage zum Beispiel: Speichere Einkauf von Lebensmitteln bei Supermarkt am letzten Samstag für vier Euro.';
+const REPROMPT = 'Sage zum Beispiel: Speichere Einkauf von Medikamenten bei Apotheke am letzten Samstag für vier Euro.';
 
-const HELP = 'Mit Receipts List speichere ich die Einkaufsbelege, die du mir diktierst, in einem Google Spreadsheet ab. Ich lege dieses Spreadsheet für dich in deinem Google Drive an. Es heißt "Receipts List". Um nun einen Beleg abzuspeichern, '+REPROMPT;
+const HELP = 'Mit Receipts List speichere ich die Einkaufsbelege, die du mir diktierst, in einem Google Spreadsheet ab. Ich lege dieses Spreadsheet für dich in deinem Google Drive an. Um nun einen Beleg abzuspeichern, '+REPROMPT;
 
 const ERROR_MISSING_ACCOUNT_LINKING = 'ErrorMissingAccountLinking';
 
@@ -183,7 +206,6 @@ async function retrieveAndValidateAttributes(handlerInput) {
     console.log("now validating spreadsheet "+attributes.spreadsheetId);
     try {
         await validateSpreadsheetId(oAuth2Client, TITLE, attributes.spreadsheetId);
-        attributesManager.setSessionAttributes(attributes);
     } catch (err) {
         console.log("validation of spreadsheet "+attributes.spreadsheetId+" failed: ", err);
         // the spreadsheet with spreadsheetId is broken
@@ -211,15 +233,23 @@ async function retrieveAttributes(attributesManager, oAuth2Client) {
 
     if (!attributes.spreadsheetId) {
         console.log("no spreadsheetId found - building new spreadsheet");
-        attributes.spreadsheetId = await buildSpreadsheet(oAuth2Client, TITLE);
-        attributesManager.setPersistentAttributes(attributes);
+        attributes.spreadsheetTitle = TITLE + " " + timestamp();
+        attributes.spreadsheetId = await buildSpreadsheet(oAuth2Client, attributes.spreadsheetTitle);
+        const newSessionAttributes = { spreadsheetId: attributes.spreadsheetId };
+        attributesManager.setSessionAttributes(newSessionAttributes);
+        attributesManager.setPersistentAttributes(newSessionAttributes);
         await attributesManager.savePersistentAttributes();
-        console.log("session attributes persisted: "+JSON.stringify(attributes));
+        console.log("session attributes persisted: "+JSON.stringify(newSessionAttributes));
     } else {
         console.log("got spreadsheetId "+attributes.spreadsheetId);
     }
 
     return attributes;
+}
+
+function timestamp() {
+    var d = new Date();
+    return d.getFullYear() + "-" + ("0"+(d.getMonth()+1)).slice(-2) + "-" + ("0" + d.getDate()).slice(-2);
 }
 
 function createOAuthClient(handlerInput) {
@@ -251,11 +281,9 @@ function buildReceipt(request) {
     const date = request.intent.slots.DATE.value;
     const category = extractSlotValue(request.intent.slots.CATEGORY);
 
-    const amount_euros = request.intent.slots.AMOUNT_EUROS.value ? parseInt(request.intent.slots.AMOUNT_EUROS.value) : 0;
-    const amount_cents = request.intent.slots.AMOUNT_CENTS.value ? parseInt(request.intent.slots.AMOUNT_CENTS.value) : 0;
-    const amount = amount_euros + amount_cents/100.0;
+    const amount = request.intent.slots.AMOUNT_EUROS.value ? parseFloat(request.intent.slots.AMOUNT_EUROS.value) : 0;
 
-    console.log("amount_euros="+amount_euros+", amount_cents="+amount_cents+", amount="+amount);
+    console.log("amount="+amount);
 
     return {
         date: date,
@@ -312,7 +340,7 @@ async function updateSheet(oAuth2Client, spreadsheetId, receipt) {
     console.log("updateSheet("+JSON.stringify(receipt)+")");
     const receiptRecord = [receipt.date, receipt.shop, receipt.amount, receipt.category];
     await appendRecord(oAuth2Client, spreadsheetId, receiptRecord);
-    return "Ich habe "+receipt.shop+" "+receipt.date+" gespeichert.";
+    return "Ich habe "+receipt.date+" "+receipt.shop+" "+receipt.amount+" euro "+receipt.category+" gespeichert.";
 }
 
 function readRange(oAuth2Client, spreadsheetId) {
@@ -388,7 +416,8 @@ exports.handler = skillBuilder
         NoHandler,
         TerminationHandler,
         HelpHandler,
-        SessionEndedHandler
+        SessionEndedHandler,
+        FallbackHandler
     )
     .addErrorHandlers(ErrorHandler)
     .withDynamoDbClient()
