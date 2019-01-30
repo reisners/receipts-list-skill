@@ -85,7 +85,7 @@ const YesHandler = {
     },
     async handle(handlerInput) {
         const responseBuilder = handlerInput.responseBuilder;
-        return responseBuilder.withShouldEndSession(false).getResponse();
+        return responseBuilder.speak("Ok, ich bin bereit!").withShouldEndSession(false).getResponse();
     }
 }
 
