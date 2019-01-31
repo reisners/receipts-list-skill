@@ -30,7 +30,7 @@ const LaunchHandler = {
         } catch (e) {
             if (e === ERROR_MISSING_ACCOUNT_LINKING) {
                 return responseBuilder
-                    .speak("Zur Belegerfassung aktiviere bitte zuerst die Kontoverknüpfung.")
+                    .speak(PROMPT_ACCOUNT_LINKING)
                     .withLinkAccountCard()
                     .getResponse();
             } else {
@@ -67,7 +67,7 @@ const SaveReceiptHandler = {
         } catch (e) {
             if (e === ERROR_MISSING_ACCOUNT_LINKING) {
                 return responseBuilder
-                    .speak("Zur Belegerfassung aktiviere bitte zuerst die Kontoverknüpfung.")
+                    .speak(PROMPT_ACCOUNT_LINKING)
                     .withLinkAccountCard()
                     .getResponse();
             } else {
@@ -180,6 +180,8 @@ const FallbackHandler = {
 const SKILL_NAME = 'Receipts List';
 
 const TITLE = SKILL_NAME;
+
+const PROMPT_ACCOUNT_LINKING = 'Zur Belegerfassung verknüpfe bitte zuerst deinen Google Account.';
 
 const TABLE_NAME = 'receipts-list-spreadsheet-id-table';
 
