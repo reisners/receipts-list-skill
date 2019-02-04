@@ -181,7 +181,7 @@ const SKILL_NAME = 'Receipts List';
 
 const TITLE = SKILL_NAME;
 
-const PROMPT_ACCOUNT_LINKING = 'Zur Belegerfassung verknüpfe bitte zuerst deinen Google Account.';
+const PROMPT_ACCOUNT_LINKING = 'Du benötigst einen Google-Account um Belege in einem Spreadsheet abzuspeichern. Bitte verwende die Alexa App, um deinen Amazon-Account mit deinem Google Account zu verknüpfen.';
 
 const TABLE_NAME = 'receipts-list-spreadsheet-id-table';
 
